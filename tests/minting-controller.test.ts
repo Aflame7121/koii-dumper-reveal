@@ -11,6 +11,7 @@ describe('MintingController', () => {
     // Reset singleton instance
     (MintingController as any).instance = null;
     mintingController = MintingController.getInstance();
+    mintingController.resetState(); // Reset state before each test
     accessControl = new AccessControl();
   });
 
@@ -43,7 +44,8 @@ describe('MintingController', () => {
 
   it('should prevent minting beyond daily limit', async () => {
     // Simulate multiple minting attempts to exceed daily limit
-    const promises = Array(1000).fill(null).map(() => 
+    // Reduce number of attempts to match reduced test limit
+    const promises = Array(50).fill(null).map(() => 
       mintingController.mintTokens(validWallet)
     );
 
