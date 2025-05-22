@@ -1,7 +1,20 @@
 {
+  "name": "blockchain-transaction-listener",
+  "version": "1.0.0",
+  "description": "Blockchain transaction listener for token dumping detection",
+  "main": "dist/blockchain-listener.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": ["blockchain", "transaction", "listener"],
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "@types/node": "^22.15.21",
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.4"
+    "@types/node": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
   }
 }
