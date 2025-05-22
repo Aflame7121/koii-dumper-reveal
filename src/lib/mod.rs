@@ -50,6 +50,16 @@ pub mod token_generator {
     /// Context for detecting token dumps
     #[derive(Accounts)]
     pub struct DetectTokenDump {}
+
+    /// Calculate generated tokens based on dump amount
+    pub fn calculate_generated_tokens(dump_amount: u64) -> u64 {
+        // Implement token generation logic with enhanced safety
+        const GENERATION_RATE: f64 = 0.1; // 10% of dumped tokens
+        const MAX_GENERATED_TOKENS: u64 = 1_000_000; // Prevent excessive token generation
+        
+        let generated = (dump_amount as f64 * GENERATION_RATE).floor() as u64;
+        generated.min(MAX_GENERATED_TOKENS)
+    }
 }
 
 // Declare the module to make it accessible
