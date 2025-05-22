@@ -9,16 +9,27 @@ export interface MintingEvent {
 }
 
 export class MintingController {
+  private static instance: MintingController;
   private tokenMinter: TokenMinter;
   private mintingEvents: MintingEvent[] = [];
   private totalMintedTokens = 0;
-  private MAX_DAILY_MINT_LIMIT = 50; // Dramatically reduced for precise testing
+  private MAX_DAILY_MINT_LIMIT = 50; // Reduced for strict testing
   private GLOBAL_TOTAL_MINT_CAP = 1000000;
 
-  constructor(
-    tokenMinter?: TokenMinter 
+  private constructor(
+    tokenMinter?: TokenMinter
   ) {
     this.tokenMinter = tokenMinter || new TokenMinter();
+  }
+
+  /**
+   * Singleton getInstance method
+   */
+  public static getInstance(): MintingController {
+    if (!MintingController.instance) {
+      MintingController.instance = new MintingController();
+    }
+    return MintingController.instance;
   }
 
   /**
@@ -27,13 +38,15 @@ export class MintingController {
    * @returns Minted token amount
    */
   async mintTokens(walletAddress: string): Promise<number> {
-    // Validate wallet authorization using strict AccessControl
+    // Create independent AccessControl for each call
     const accessControl = new AccessControl();
+
+    // Strict wallet authorization check
     if (!accessControl.canMint(walletAddress)) {
       throw new Error('Wallet not authorized to mint tokens');
     }
 
-    // Validate minting limits
+    // Check daily and global mint limits
     this.validateMintingLimits();
 
     // Generate tokens
@@ -60,12 +73,11 @@ export class MintingController {
   private validateMintingLimits(): void {
     const dailyMintedTokens = this.getDailyMintedTokens();
 
-    // Strict daily minting limit check
+    // Strict limit enforcement
     if (dailyMintedTokens >= this.MAX_DAILY_MINT_LIMIT) {
       throw new Error('Daily minting limit exceeded');
     }
 
-    // Global minting cap check
     if (this.totalMintedTokens >= this.GLOBAL_TOTAL_MINT_CAP) {
       throw new Error('Global minting cap reached');
     }
