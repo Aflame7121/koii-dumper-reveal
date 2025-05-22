@@ -31,12 +31,13 @@ describe('WalletDumpingDetector', () => {
     expect(() => detector.detectDumping([])).toThrow('No transactions provided for analysis');
   });
 
-  it('should handle custom dumping threshold', () => {
-    const transactions = createTransactions([100, 200, 50, 300]);
+  it('should handle custom dumping threshold with large transactions', () => {
+    const transactions = createTransactions([500, 200, 50, 300]);
     
     const detector = new WalletDumpingDetector();
     const analysis = detector.detectDumping(transactions, 0.5);
 
     expect(analysis.dumpingTransactions.length).toBeGreaterThan(0);
+    expect(analysis.dumpingTransactions[0].amount).toBe(500);
   });
 });
