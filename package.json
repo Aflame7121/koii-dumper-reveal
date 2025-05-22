@@ -1,5 +1,13 @@
 {
+  "name": "koii-wallet-dumping-detector",
+  "version": "0.1.0",
+  "description": "Wallet dumping detection mechanism for Koii K2 layer",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
   "devDependencies": {
-    "vitest": "^3.1.4"
+    "vitest": "latest"
   }
 }
