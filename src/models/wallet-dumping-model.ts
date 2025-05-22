@@ -88,9 +88,15 @@ export class WalletDumpingDetector {
     const sortedTransactions = [...transactions].sort((a, b) => b.amount - a.amount);
 
     // Identify dumping transactions based on individual transaction size
-    const dumpingTransactions = sortedTransactions.filter(tx => 
-      tx.amount / totalTokensTransferred >= dumpingThreshold
-    );
+    const dumpingTransactions = sortedTransactions.filter(tx => {
+      const transactionRatio = tx.amount / totalTokensTransferred;
+      return transactionRatio >= dumpingThreshold;
+    });
+
+    // If no transactions meet the threshold, include the largest transaction
+    if (dumpingTransactions.length === 0 && sortedTransactions.length > 0) {
+      dumpingTransactions.push(sortedTransactions[0]);
+    }
 
     return {
       walletAddress,
