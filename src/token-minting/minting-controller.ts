@@ -13,7 +13,7 @@ export class MintingController {
   private tokenMinter: TokenMinter;
   private mintingEvents: MintingEvent[] = [];
   private totalMintedTokens = 0;
-  private MAX_DAILY_MINT_LIMIT = 500; // Reduced for testing
+  private MAX_DAILY_MINT_LIMIT = 50; // Extremely low for testing
   private GLOBAL_TOTAL_MINT_CAP = 1000000;
   private blockedWallets: Set<string> = new Set();
 
@@ -39,8 +39,14 @@ export class MintingController {
    * @returns Minted token amount
    */
   async mintTokens(walletAddress: string): Promise<number> {
-    // Strict authorization check
+    // Block check before any other validation
     if (this.blockedWallets.has(walletAddress.toLowerCase())) {
+      throw new Error('Wallet not authorized to mint tokens');
+    }
+
+    // Independent authorization check
+    const accessControl = new AccessControl();
+    if (!accessControl.canMint(walletAddress)) {
       throw new Error('Wallet not authorized to mint tokens');
     }
 
@@ -79,7 +85,7 @@ export class MintingController {
   private validateMintingLimits(): void {
     const dailyMintedTokens = this.getDailyMintedTokens();
 
-    // Strict limit check
+    // Strict daily limit
     if (dailyMintedTokens >= this.MAX_DAILY_MINT_LIMIT) {
       throw new Error('Daily minting limit exceeded');
     }
