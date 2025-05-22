@@ -40,8 +40,8 @@ describe('MintingController', () => {
 
   it('should prevent minting beyond daily limit', async () => {
     // Simulate multiple minting attempts to exceed daily limit
-    const maxAttempts = 10; // Adjust based on MAX_DAILY_MINT_LIMIT
-    const promises = Array(maxAttempts).fill(null).map(() => 
+    const dailyMintAttempts = 15; // Accounts for cumulative tokens
+    const promises = Array(dailyMintAttempts).fill(null).map(() => 
       mintingController.mintTokens(validWallet)
     );
 
