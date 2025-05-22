@@ -84,9 +84,9 @@ export class WalletDumpingDetector {
       0
     );
 
-    // Identify dumping transactions (simplified logic)
+    // Identify dumping transactions based on individual transaction size
     const dumpingTransactions = transactions.filter(tx => 
-      tx.amount / totalTokensTransferred > dumpingThreshold
+      tx.amount / totalTokensTransferred >= dumpingThreshold
     );
 
     return {
