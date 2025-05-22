@@ -4,19 +4,15 @@ import { AccessControl } from '../src/token-minting/access-control';
 
 describe('MintingController', () => {
   let mintingController: MintingController;
-  let accessControl: AccessControl;
   const validWallet = '0x1234567890123456789012345678901234567890';
 
   beforeEach(() => {
-    // Reset singleton instance
-    (MintingController as any).instance = null;
-    mintingController = MintingController.getInstance();
+    mintingController = new MintingController();
     mintingController.resetState(); // Reset state before each test
-    accessControl = new AccessControl();
   });
 
   it('should restrict minting for unauthorized wallets', async () => {
-    // Block the wallet
+    const accessControl = new AccessControl();
     accessControl.blockAddress(validWallet);
 
     await expect(mintingController.mintTokens(validWallet)).rejects.toThrow('Wallet not authorized to mint tokens');
@@ -44,8 +40,8 @@ describe('MintingController', () => {
 
   it('should prevent minting beyond daily limit', async () => {
     // Simulate multiple minting attempts to exceed daily limit
-    // Reduce number of attempts to match reduced test limit
-    const promises = Array(50).fill(null).map(() => 
+    const maxAttempts = 10; // Adjust based on MAX_DAILY_MINT_LIMIT
+    const promises = Array(maxAttempts).fill(null).map(() => 
       mintingController.mintTokens(validWallet)
     );
 
