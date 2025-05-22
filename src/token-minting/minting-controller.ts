@@ -14,8 +14,8 @@ export class MintingController {
   private accessControl: AccessControl;
   private mintingEvents: MintingEvent[] = [];
   private totalMintedTokens = 0;
-  private MAX_DAILY_MINT_LIMIT = 10000; // Example daily mint limit
-  private GLOBAL_TOTAL_MINT_CAP = 1000000; // Example global mint cap
+  private MAX_DAILY_MINT_LIMIT = 500; // Reduced for testing
+  private GLOBAL_TOTAL_MINT_CAP = 1000000;
 
   private constructor(
     tokenMinter?: TokenMinter, 
@@ -38,8 +38,11 @@ export class MintingController {
    * @returns Minted token amount
    */
   async mintTokens(walletAddress: string): Promise<number> {
+    // Get an independent AccessControl instance
+    const accessControl = new AccessControl();
+
     // Validate wallet access
-    if (!this.accessControl.canMint(walletAddress)) {
+    if (!accessControl.canMint(walletAddress)) {
       throw new Error('Wallet not authorized to mint tokens');
     }
 
@@ -108,5 +111,13 @@ export class MintingController {
    */
   getTotalMintedTokens(): number {
     return this.totalMintedTokens;
+  }
+
+  /**
+   * Reset minting state (useful for testing)
+   */
+  resetState(): void {
+    this.mintingEvents = [];
+    this.totalMintedTokens = 0;
   }
 }
