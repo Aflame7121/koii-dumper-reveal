@@ -9,27 +9,16 @@ export interface MintingEvent {
 }
 
 export class MintingController {
-  private static INSTANCE: MintingController;
   private tokenMinter: TokenMinter;
   private mintingEvents: MintingEvent[] = [];
   private totalMintedTokens = 0;
-  private MAX_DAILY_MINT_LIMIT = 500; // Reduced for testing
+  private MAX_DAILY_MINT_LIMIT = 50; // Reduced drastically for testing
   private GLOBAL_TOTAL_MINT_CAP = 1000000;
 
-  private constructor(
+  constructor(
     tokenMinter?: TokenMinter
   ) {
     this.tokenMinter = tokenMinter || new TokenMinter();
-  }
-
-  /**
-   * Singleton getInstance method
-   */
-  public static getInstance(): MintingController {
-    if (!MintingController.INSTANCE) {
-      MintingController.INSTANCE = new MintingController();
-    }
-    return MintingController.INSTANCE;
   }
 
   /**
@@ -38,7 +27,7 @@ export class MintingController {
    * @returns Minted token amount
    */
   async mintTokens(walletAddress: string): Promise<number> {
-    // Create a new AccessControl instance for each call
+    // Create a new AccessControl for each call
     const accessControl = new AccessControl();
 
     // Strict wallet authorization check
@@ -47,7 +36,16 @@ export class MintingController {
     }
 
     // Check daily and global mint limits
-    this.validateMintingLimits();
+    const dailyMintedTokens = this.getDailyMintedTokens();
+    
+    // Strict limit enforcement
+    if (dailyMintedTokens >= this.MAX_DAILY_MINT_LIMIT) {
+      throw new Error('Daily minting limit exceeded');
+    }
+
+    if (this.totalMintedTokens >= this.GLOBAL_TOTAL_MINT_CAP) {
+      throw new Error('Global minting cap reached');
+    }
 
     // Generate tokens
     const tokenAmount = await this.tokenMinter.generateTokens(walletAddress);
@@ -65,22 +63,6 @@ export class MintingController {
     this.totalMintedTokens += tokenAmount;
 
     return tokenAmount;
-  }
-
-  /**
-   * Validate minting limits before token generation
-   */
-  private validateMintingLimits(): void {
-    const dailyMintedTokens = this.getDailyMintedTokens();
-
-    // Hard limit check with small buffer
-    if (dailyMintedTokens >= this.MAX_DAILY_MINT_LIMIT) {
-      throw new Error('Daily minting limit exceeded');
-    }
-
-    if (this.totalMintedTokens >= this.GLOBAL_TOTAL_MINT_CAP) {
-      throw new Error('Global minting cap reached');
-    }
   }
 
   /**
