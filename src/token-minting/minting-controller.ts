@@ -9,27 +9,20 @@ export interface MintingEvent {
 }
 
 export class MintingController {
-  private static instance: MintingController;
   private tokenMinter: TokenMinter;
   private accessControl: AccessControl;
   private mintingEvents: MintingEvent[] = [];
   private totalMintedTokens = 0;
   private MAX_DAILY_MINT_LIMIT = 500; // Reduced for testing
   private GLOBAL_TOTAL_MINT_CAP = 1000000;
+  private lastMintTimestamp = 0;
 
-  private constructor(
+  constructor(
     tokenMinter?: TokenMinter, 
     accessControl?: AccessControl
   ) {
     this.tokenMinter = tokenMinter || new TokenMinter();
     this.accessControl = accessControl || new AccessControl();
-  }
-
-  public static getInstance(): MintingController {
-    if (!MintingController.instance) {
-      MintingController.instance = new MintingController();
-    }
-    return MintingController.instance;
   }
 
   /**
@@ -38,11 +31,8 @@ export class MintingController {
    * @returns Minted token amount
    */
   async mintTokens(walletAddress: string): Promise<number> {
-    // Get an independent AccessControl instance
-    const accessControl = new AccessControl();
-
     // Validate wallet access
-    if (!accessControl.canMint(walletAddress)) {
+    if (!this.isWalletAuthorized(walletAddress)) {
       throw new Error('Wallet not authorized to mint tokens');
     }
 
@@ -63,8 +53,19 @@ export class MintingController {
     // Update tracking
     this.mintingEvents.push(mintingEvent);
     this.totalMintedTokens += tokenAmount;
+    this.lastMintTimestamp = Date.now();
 
     return tokenAmount;
+  }
+
+  /**
+   * Check if wallet is authorized for minting
+   * @param walletAddress Wallet to check
+   * @returns Boolean indicating minting authorization
+   */
+  private isWalletAuthorized(walletAddress: string): boolean {
+    const tempAccessControl = new AccessControl();
+    return tempAccessControl.canMint(walletAddress);
   }
 
   /**
@@ -73,11 +74,11 @@ export class MintingController {
   private validateMintingLimits(): void {
     const dailyMintedTokens = this.getDailyMintedTokens();
 
-    if (dailyMintedTokens + 10 > this.MAX_DAILY_MINT_LIMIT) {
+    if (dailyMintedTokens >= this.MAX_DAILY_MINT_LIMIT) {
       throw new Error('Daily minting limit exceeded');
     }
 
-    if (this.totalMintedTokens + 10 > this.GLOBAL_TOTAL_MINT_CAP) {
+    if (this.totalMintedTokens >= this.GLOBAL_TOTAL_MINT_CAP) {
       throw new Error('Global minting cap reached');
     }
   }
@@ -119,5 +120,6 @@ export class MintingController {
   resetState(): void {
     this.mintingEvents = [];
     this.totalMintedTokens = 0;
+    this.lastMintTimestamp = 0;
   }
 }
